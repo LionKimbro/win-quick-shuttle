@@ -1,0 +1,2 @@
+[console_scripts]
+win-quick-shuttle = win_quick_shuttle.main:main

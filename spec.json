@@ -1,0 +1,247 @@
+{
+  "chat-gpt": "https://chatgpt.com/c/697e13c5-df30-8331-9e82-f8a105139e02",
+  "program": "win-quick-shuttle",
+  "version": "0.2",
+  "platform": "windows",
+  "purpose": "Provide a tiny Tkinter GUI for rapidly redirecting filesystem junctions to different target folders, primarily to control where applications (e.g. Chrome) write files.",
+  "conceptual_model": {
+    "junction_folder": "A directory path on disk that acts as a redirect point, used by external programs.",
+    "target_folder": "A user-editable directory path that the junction should point to.",
+    "mechanism": "Windows NTFS directory junctions created and destroyed via mklink /J."
+  },
+  "inputs": {
+    "initial_junction_path": {
+      "type": "absolute_path",
+      "description": "Optional filesystem path to pre-fill in the junction path entry (e.g. C:\\Users\\Lion\\Downloads\\ACTIVE).",
+      "required": false,
+      "mutable": true
+    },
+    "initial_target_path": {
+      "type": "absolute_path",
+      "description": "Optional target folder path to pre-fill in the target path entry on startup.",
+      "required": false
+    }
+  },
+  "outputs": {
+    "filesystem": [
+      "Creates, redirects, and removes junction directories",
+      "Creates target directories on demand"
+    ],
+    "ui": [
+      "Status messages indicating success or failure of operations",
+      "Opens Windows Explorer at specified paths"
+    ]
+  },
+  "ui": {
+    "toolkit": "tkinter",
+    "window": {
+      "title": "win-quick-shuttle",
+      "resizable": false,
+      "always_on_top": false
+    },
+    "layout": {
+      "sections": [
+        {
+          "name": "junction_path",
+          "widgets": [
+            {
+              "type": "Entry",
+              "id": "junction_entry",
+              "description": "Editable text field for the junction path. Updates current state display on focus out or Enter key."
+            },
+            {
+              "type": "Button",
+              "id": "junction_select_button",
+              "label": "Select",
+              "action": "browse_junction_path",
+              "description": "Opens folder selection dialog for junction path."
+            },
+            {
+              "type": "Button",
+              "id": "junction_explore_button",
+              "label": "Explore",
+              "action": "explore_junction_path",
+              "description": "Opens Windows Explorer at the junction path (or parent if it doesn't exist)."
+            }
+          ]
+        },
+        {
+          "name": "current_state",
+          "label": "Currently Points To",
+          "widgets": [
+            {
+              "type": "Label",
+              "id": "current_target_label",
+              "dynamic": true,
+              "description": "Displays the resolved target path of the existing junction, or a message if none exists."
+            }
+          ]
+        },
+        {
+          "name": "target_path",
+          "widgets": [
+            {
+              "type": "Entry",
+              "id": "target_entry",
+              "description": "Editable text field containing the desired target folder path."
+            },
+            {
+              "type": "Button",
+              "id": "target_select_button",
+              "label": "Select",
+              "action": "browse_target_path",
+              "description": "Opens folder selection dialog for target path."
+            },
+            {
+              "type": "Button",
+              "id": "target_explore_button",
+              "label": "Explore",
+              "action": "explore_target_path",
+              "description": "Opens Windows Explorer at the target path (or parent if it doesn't exist)."
+            }
+          ]
+        },
+        {
+          "name": "actions",
+          "widgets": [
+            {
+              "type": "Button",
+              "id": "create_folder_button",
+              "label": "Create Folder",
+              "action": "create_target_folder"
+            },
+            {
+              "type": "Button",
+              "id": "point_to_button",
+              "label": "Point To",
+              "action": "point_junction_to_target"
+            },
+            {
+              "type": "Button",
+              "id": "unlink_button",
+              "label": "Unlink",
+              "action": "unlink_junction"
+            }
+          ]
+        },
+        {
+          "name": "status",
+          "widgets": [
+            {
+              "type": "Label",
+              "id": "status_label",
+              "text": "",
+              "dynamic": true,
+              "description": "Displays the result of the last operation (success or error message)."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "behavior": {
+    "startup": [
+      "Pre-fill junction_entry and target_entry if command line arguments provided",
+      "Check whether junction_path exists",
+      "If it exists and is a junction, resolve and display its current target",
+      "If it does not exist, display 'No junction present'"
+    ],
+    "create_target_folder": {
+      "steps": [
+        "Read path from target_entry",
+        "If path exists, report 'Folder already exists'",
+        "If path does not exist, attempt to create it recursively",
+        "Update status_label with success or failure"
+      ]
+    },
+    "point_junction_to_target": {
+      "steps": [
+        "Read junction path from junction_entry",
+        "Read target path from target_entry",
+        "Verify both paths are specified",
+        "Verify target path exists and is a directory",
+        "If junction_path exists and is a junction, remove it using rmdir",
+        "Create a new directory junction using mklink /J",
+        "Refresh displayed current target",
+        "Update status_label with success or failure"
+      ]
+    },
+    "unlink_junction": {
+      "steps": [
+        "Read junction path from junction_entry",
+        "Verify junction path is specified",
+        "Verify junction exists and is a junction",
+        "Remove the junction using rmdir",
+        "Refresh displayed current target",
+        "Update status_label with success or failure"
+      ]
+    },
+    "browse_junction_path": {
+      "steps": [
+        "Open folder selection dialog",
+        "If user selects a folder, update junction_entry",
+        "Refresh current state display"
+      ]
+    },
+    "browse_target_path": {
+      "steps": [
+        "Open folder selection dialog",
+        "If user selects a folder, update target_entry"
+      ]
+    },
+    "explore_junction_path": {
+      "steps": [
+        "Normalize path (convert forward slashes to backslashes)",
+        "If path exists, open it in Windows Explorer using os.startfile()",
+        "If path doesn't exist, open parent folder",
+        "Show error if neither exists"
+      ]
+    },
+    "explore_target_path": {
+      "steps": [
+        "Normalize path (convert forward slashes to backslashes)",
+        "If path exists, open it in Windows Explorer using os.startfile()",
+        "If path doesn't exist, open parent folder",
+        "Show error if neither exists"
+      ]
+    }
+  },
+  "shell_integration": {
+    "method": "subprocess",
+    "commands": [
+      {
+        "name": "remove_junction",
+        "command": "rmdir \"{junction_path}\""
+      },
+      {
+        "name": "create_junction",
+        "command": "mklink /J \"{junction_path}\" \"{target_path}\""
+      }
+    ],
+    "error_handling": "Capture stdout, stderr, and return codes for display in status_label."
+  },
+  "error_cases": [
+    "junction_path not specified",
+    "target_path not specified",
+    "junction_path exists but is not a junction",
+    "junction_path exists and is not removable",
+    "target path does not exist when pointing",
+    "target path is not a directory",
+    "mklink fails due to permissions or filesystem issues"
+  ],
+  "non_goals": [
+    "No background monitoring of downloads",
+    "No automatic detection of active file writes",
+    "No tray icon (future enhancement)"
+  ],
+  "testing_notes": {
+    "ui_testing": "Tkinter widgets can be instantiated and tested without mainloop using direct method calls.",
+    "filesystem_testing": "Shell calls should be mockable for unit tests; integration tests require NTFS.",
+    "expected_difficulty": "Moderate for LLMs due to Windows junction semantics and shell invocation."
+  },
+  "philosophy": {
+    "design": "Keep Chrome dumb; manipulate the filesystem instead.",
+    "complexity": "Intentionally minimal; flexible junction management with simple UI.",
+    "user_experience": "Fast, explicit, and reversible."
+  }
+}

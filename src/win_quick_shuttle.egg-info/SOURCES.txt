@@ -1,0 +1,12 @@
+LICENSE
+pyproject.toml
+src/win_quick_shuttle/__init__.py
+src/win_quick_shuttle/main.py
+src/win_quick_shuttle.egg-info/PKG-INFO
+src/win_quick_shuttle.egg-info/SOURCES.txt
+src/win_quick_shuttle.egg-info/dependency_links.txt
+src/win_quick_shuttle.egg-info/entry_points.txt
+src/win_quick_shuttle.egg-info/requires.txt
+src/win_quick_shuttle.egg-info/top_level.txt
+tests/test_main.py
+tests/test_ui.py

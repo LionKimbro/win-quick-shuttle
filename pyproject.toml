@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "win-quick-shuttle"
+version = "0.1.0"
+description = "A tiny GUI for rapidly redirecting Windows NTFS directory junctions"
+readme = "README.md"
+license = "CC0-1.0"
+requires-python = ">=3.8"
+keywords = ["windows", "junction", "ntfs", "filesystem"]
+
+[project.scripts]
+win-quick-shuttle = "win_quick_shuttle.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]

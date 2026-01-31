@@ -9,23 +9,73 @@
     "target_folder": "A user-editable directory path that the junction should point to.",
     "mechanism": "Windows NTFS directory junctions created and destroyed via mklink /J."
   },
-  "inputs": {
-    "initial_junction_path": {
-      "type": "absolute_path",
-      "description": "Optional filesystem path to pre-fill in the junction path entry (e.g. C:\\Users\\Lion\\Downloads\\ACTIVE).",
-      "required": false,
-      "mutable": true
+  "dependencies": {
+    "lionscliapp": {
+      "description": "A humane CLI application framework providing persistent configuration, built-in commands, and layered option management.",
+      "source": "https://github.com/LionKimbro/lionscliapp"
+    }
+  },
+  "cli": {
+    "framework": "lionscliapp",
+    "project_dir": ".win-quick-shuttle",
+    "config_file": ".win-quick-shuttle/config.json",
+    "commands": {
+      "run": {
+        "description": "Launch the win-quick-shuttle GUI",
+        "behavior": "Reads junction and target from ctx (layered config), launches Tkinter GUI"
+      },
+      "set": {
+        "description": "Persist a configuration value (built-in)",
+        "usage": "win-quick-shuttle set <key> <value>",
+        "examples": [
+          "win-quick-shuttle set junction \"C:\\Users\\Lion\\Downloads\\ACTIVE\"",
+          "win-quick-shuttle set target \"C:\\Users\\Lion\\Downloads\\Project1\""
+        ]
+      },
+      "get": {
+        "description": "Display a configuration value (built-in)",
+        "usage": "win-quick-shuttle get <key>"
+      },
+      "help": {
+        "description": "Show available commands and options (built-in)",
+        "usage": "win-quick-shuttle help [command]"
+      }
     },
-    "initial_target_path": {
+    "options": {
+      "junction": {
+        "default": "",
+        "description": "Default junction path to manage",
+        "cli_override": "--junction <path>"
+      },
+      "target": {
+        "default": "",
+        "description": "Default target path for the junction",
+        "cli_override": "--target <path>"
+      }
+    },
+    "config_layering": [
+      "Declared defaults (empty strings)",
+      "Persisted config.json values (via 'set' command)",
+      "CLI overrides (--junction, --target)"
+    ]
+  },
+  "inputs": {
+    "junction": {
       "type": "absolute_path",
-      "description": "Optional target folder path to pre-fill in the target path entry on startup.",
+      "description": "Junction path from lionscliapp ctx (layered: default → config → CLI override).",
+      "required": false
+    },
+    "target": {
+      "type": "absolute_path",
+      "description": "Target path from lionscliapp ctx (layered: default → config → CLI override).",
       "required": false
     }
   },
   "outputs": {
     "filesystem": [
       "Creates, redirects, and removes junction directories",
-      "Creates target directories on demand"
+      "Creates target directories on demand",
+      "Persists configuration to .win-quick-shuttle/config.json"
     ],
     "ui": [
       "Status messages indicating success or failure of operations",
@@ -47,7 +97,7 @@
             {
               "type": "Entry",
               "id": "junction_entry",
-              "description": "Editable text field for the junction path. Updates current state display on focus out or Enter key."
+              "description": "Editable text field for the junction path. Pre-filled from ctx. Updates current state display on focus out or Enter key."
             },
             {
               "type": "Button",
@@ -83,7 +133,7 @@
             {
               "type": "Entry",
               "id": "target_entry",
-              "description": "Editable text field containing the desired target folder path."
+              "description": "Editable text field containing the desired target folder path. Pre-filled from ctx. Auto-updates when junction changes to a valid junction."
             },
             {
               "type": "Button",
@@ -141,9 +191,12 @@
   },
   "behavior": {
     "startup": [
-      "Pre-fill junction_entry and target_entry if command line arguments provided",
+      "lionscliapp builds ctx from layered config (defaults → config.json → CLI overrides)",
+      "Pre-fill junction_entry from ctx['junction'] if set",
+      "Pre-fill target_entry from ctx['target'] if set",
       "Check whether junction_path exists",
       "If it exists and is a junction, resolve and display its current target",
+      "If junction found, auto-populate target_entry with current junction target",
       "If it does not exist, display 'No junction present'"
     ],
     "create_target_folder": {
@@ -204,6 +257,10 @@
         "If path doesn't exist, open parent folder",
         "Show error if neither exists"
       ]
+    },
+    "junction_change_sync": {
+      "description": "When junction path changes and points to a valid junction, auto-populate target_entry with the junction's current target",
+      "trigger": "Junction entry focus out or Enter key, when junction path differs from last known path"
     }
   },
   "shell_integration": {
@@ -237,11 +294,13 @@
   "testing_notes": {
     "ui_testing": "Tkinter widgets can be instantiated and tested without mainloop using direct method calls.",
     "filesystem_testing": "Shell calls should be mockable for unit tests; integration tests require NTFS.",
+    "cli_testing": "lionscliapp provides reset() for test isolation.",
     "expected_difficulty": "Moderate for LLMs due to Windows junction semantics and shell invocation."
   },
   "philosophy": {
     "design": "Keep Chrome dumb; manipulate the filesystem instead.",
     "complexity": "Intentionally minimal; flexible junction management with simple UI.",
-    "user_experience": "Fast, explicit, and reversible."
+    "user_experience": "Fast, explicit, and reversible.",
+    "cli_philosophy": "Humane CLI with persistent config - set once, use forever, override when needed."
   }
 }

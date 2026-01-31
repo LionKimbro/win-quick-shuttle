@@ -1,2 +1,2 @@
 [console_scripts]
-win-quick-shuttle = win_quick_shuttle.main:main
+win-quick-shuttle = win_quick_shuttle.cli:main

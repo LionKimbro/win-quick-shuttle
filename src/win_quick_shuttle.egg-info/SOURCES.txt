@@ -1,6 +1,7 @@
 LICENSE
 pyproject.toml
 src/win_quick_shuttle/__init__.py
+src/win_quick_shuttle/cli.py
 src/win_quick_shuttle/main.py
 src/win_quick_shuttle.egg-info/PKG-INFO
 src/win_quick_shuttle.egg-info/SOURCES.txt

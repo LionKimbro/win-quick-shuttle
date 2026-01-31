@@ -194,8 +194,10 @@ class WinQuickShuttle:
             self._set_status("Path does not exist", is_error=True)
 
     def _refresh_current_state(self):
-        """Update the current state display."""
+        """Update the current state display and sync target entry if junction changed."""
         junction_path = self._get_junction_path()
+        new_target = None
+
         if not junction_path:
             self.current_target_label.config(text="Enter a junction path above")
         elif not os.path.exists(junction_path):
@@ -204,10 +206,18 @@ class WinQuickShuttle:
             target = get_junction_target(junction_path)
             if target:
                 self.current_target_label.config(text=target)
+                new_target = target
             else:
                 self.current_target_label.config(text="Junction exists but target unreadable")
         else:
             self.current_target_label.config(text="Path exists but is not a junction")
+
+        # If we found a valid junction target and the junction path changed, update target entry
+        if new_target and junction_path != getattr(self, '_last_junction_path', None):
+            self.target_entry.delete(0, tk.END)
+            self.target_entry.insert(0, new_target)
+
+        self._last_junction_path = junction_path
 
     def _set_status(self, message, is_error=False):
         """Update the status label."""

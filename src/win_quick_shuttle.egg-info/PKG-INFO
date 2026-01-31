@@ -1,12 +1,13 @@
 Metadata-Version: 2.4
 Name: win-quick-shuttle
-Version: 0.1.0
+Version: 0.2.0
 Summary: A tiny GUI for rapidly redirecting Windows NTFS directory junctions
 License-Expression: CC0-1.0
 Keywords: windows,junction,ntfs,filesystem
-Requires-Python: >=3.8
+Requires-Python: >=3.10
 Description-Content-Type: text/markdown
 License-File: LICENSE
+Requires-Dist: lionscliapp @ file:///F:/lion/github/lionscliapp
 Provides-Extra: dev
 Requires-Dist: pytest>=7.0; extra == "dev"
 Dynamic: license-file

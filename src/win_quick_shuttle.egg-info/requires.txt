@@ -1,3 +1,4 @@
+lionscliapp @ file:///F:/lion/github/lionscliapp
 
 [dev]
 pytest>=7.0

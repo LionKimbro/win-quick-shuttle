@@ -1,39 +1,38 @@
 """CLI entry point for win-quick-shuttle using lionscliapp framework."""
 
-import lionscliapp as app
-from win_quick_shuttle.main import WinQuickShuttle
+import tkinter as tk
+import lionscliapp as cliapp
+from win_quick_shuttle import main
 
 
 def cmd_run():
     """Launch the win-quick-shuttle GUI."""
-    junction_path = app.ctx.get("junction", "") or None
-    target_path = app.ctx.get("target", "") or None
+    main.app["initial_junction_path"] = cliapp.ctx.get("junction", "") or None
+    main.app["initial_target_path"] = cliapp.ctx.get("target", "") or None
 
-    gui = WinQuickShuttle(junction_path, target_path)
-    gui.run()
+    main.app["root"] = tk.Tk()
+    main.app["root"].withdraw()
+    main.entry()
+    main.app["root"].mainloop()
 
 
-def main():
+def main_cli():
     """Entry point for win-quick-shuttle CLI."""
-    # Declare the application
-    app.declare_app("win-quick-shuttle", "0.2.0")
-    app.declare_projectdir(".win-quick-shuttle")
+    cliapp.declare_app("win-quick-shuttle", "0.2.0")
+    cliapp.declare_projectdir(".win-quick-shuttle")
 
-    # Declare configuration keys
-    app.declare_key("junction", "")
-    app.describe_key("junction", "Default junction path to manage", "l")
+    cliapp.declare_key("junction", "")
+    cliapp.describe_key("junction", "Default junction path to manage", "l")
 
-    app.declare_key("target", "")
-    app.describe_key("target", "Default target path for the junction", "l")
+    cliapp.declare_key("target", "")
+    cliapp.describe_key("target", "Default target path for the junction", "l")
 
-    # Declare commands
-    app.declare_cmd("run", cmd_run)
-    app.describe_cmd("run", "Launch the GUI", "s")
-    app.describe_cmd("run", "Launch the win-quick-shuttle GUI to manage directory junctions.", "l")
+    cliapp.declare_cmd("run", cmd_run)
+    cliapp.describe_cmd("run", "Launch the GUI", "s")
+    cliapp.describe_cmd("run", "Launch the win-quick-shuttle GUI to manage directory junctions.", "l")
 
-    # Run the application
-    app.main()
+    cliapp.main()
 
 
 if __name__ == "__main__":
-    main()
+    main_cli()

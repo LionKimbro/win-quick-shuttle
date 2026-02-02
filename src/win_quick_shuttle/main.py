@@ -2,7 +2,6 @@
 
 import os
 import subprocess
-import sys
 import tkinter as tk
 from tkinter import filedialog
 import ctypes
@@ -369,13 +368,3 @@ def exit():
     g["last_junction_path"] = None
 
 
-# --- Standalone entry point ---
-
-if __name__ == "__main__":
-    app["initial_junction_path"] = sys.argv[1] if len(sys.argv) > 1 else None
-    app["initial_target_path"] = sys.argv[2] if len(sys.argv) > 2 else None
-
-    app["root"] = tk.Tk()
-    app["root"].withdraw()
-    entry()
-    app["root"].mainloop()

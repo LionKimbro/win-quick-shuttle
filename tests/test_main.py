@@ -86,5 +86,65 @@ class TestShellCommands:
         assert "Cannot create" in output
 
 
-# UI tests are in a separate file to avoid Tcl/Tk initialization issues
-# when running headless or in rapid succession
+class TestJunctionIntegration:
+    """Integration tests that create real junctions on the filesystem."""
+
+    def test_full_junction_lifecycle(self, tmp_path):
+        """Create a junction, verify it, then remove it."""
+        target = tmp_path / "target"
+        junction = tmp_path / "junction"
+        target.mkdir()
+
+        # Create a file in target to verify junction works
+        (target / "test.txt").write_text("hello")
+
+        # Create junction
+        success, output = create_junction(str(junction), str(target))
+        assert success, f"Failed to create junction: {output}"
+
+        # Verify junction exists and points to target
+        assert junction.exists()
+        assert is_junction(str(junction))
+        # Junction target may have \\?\ prefix, so check it ends with the target path
+        junction_target = get_junction_target(str(junction))
+        assert junction_target.endswith(str(target)) or str(target) in junction_target
+
+        # Verify we can access files through the junction
+        assert (junction / "test.txt").read_text() == "hello"
+
+        # Remove junction
+        success, error = remove_junction(str(junction))
+        assert success, f"Failed to remove junction: {error}"
+
+        # Verify junction is gone but target remains
+        assert not junction.exists()
+        assert target.exists()
+        assert (target / "test.txt").read_text() == "hello"
+
+    def test_redirect_junction_to_new_target(self, tmp_path):
+        """Redirect an existing junction to a different target."""
+        target_a = tmp_path / "target_a"
+        target_b = tmp_path / "target_b"
+        junction = tmp_path / "junction"
+        target_a.mkdir()
+        target_b.mkdir()
+
+        (target_a / "a.txt").write_text("from A")
+        (target_b / "b.txt").write_text("from B")
+
+        # Create junction pointing to A
+        success, _ = create_junction(str(junction), str(target_a))
+        assert success
+        assert (junction / "a.txt").read_text() == "from A"
+
+        # Remove and recreate pointing to B
+        remove_junction(str(junction))
+        success, _ = create_junction(str(junction), str(target_b))
+        assert success
+        assert (junction / "b.txt").read_text() == "from B"
+
+        # Cleanup
+        remove_junction(str(junction))
+
+
+# UI tests are in guitests/ and use tkintertester

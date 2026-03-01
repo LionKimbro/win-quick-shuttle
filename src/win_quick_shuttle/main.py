@@ -348,6 +348,14 @@ def _build_ui():
     widgets["status_label"].grid(row=0, column=0, sticky="ew")
     frame_status.columnconfigure(0, weight=1)
 
+    # Section 5: Notes
+    frame_notes = tk.LabelFrame(toplevel, text="Notes", padx=10, pady=5)
+    frame_notes.grid(row=5, column=0, padx=10, pady=5, sticky="ew")
+
+    widgets["notes_text"] = tk.Text(frame_notes, height=4, width=55)
+    widgets["notes_text"].grid(row=0, column=0, sticky="ew")
+    frame_notes.columnconfigure(0, weight=1)
+
 
 # --- Entry / Exit for tkintertester compatibility ---
 

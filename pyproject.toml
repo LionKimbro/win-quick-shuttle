@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 [project.scripts]
-win-quick-shuttle = "win_quick_shuttle.cli:main"
+win-quick-shuttle = "win_quick_shuttle.cli:main_cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]
